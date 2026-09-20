@@ -16,8 +16,14 @@ def preprocess(raw: mne.io.BaseRaw, cfg: dict) -> mne.io.BaseRaw:
 
     notch_freq = pre.get("notch_freq")
     notch_q = pre.get("notch_q")
+
     if notch_freq is not None:
-        notch_width = float(notch_freq) / float(notch_q) if notch_q else None
+        notch_width = (
+            float(notch_freq) / float(notch_q)
+            if notch_q
+            else None
+        )
+
         raw.notch_filter(
             freqs=notch_freq,
             notch_widths=notch_width,
@@ -53,10 +59,14 @@ def epoch(raw: mne.io.BaseRaw, cfg: dict):
 
     data = raw.get_data()
     windows = []
+
     for start in range(0, n_samples - win_samples + 1, step_samples):
-        windows.append({
-            "start_sample": start,
-            "start_sec": start / sfreq,
-            "data": data[:, start:start + win_samples],
-        })
+        windows.append(
+            {
+                "start_sample": start,
+                "start_sec": start / sfreq,
+                "data": data[:, start:start + win_samples],
+            }
+        )
+
     return windows
