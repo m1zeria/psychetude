@@ -9,12 +9,12 @@ const TEN_TWENTY = {
   O1: [-0.25, -0.65, 0.60], O2: [0.25, -0.65, 0.60],
 };
 
-export function attachElectrodes({ brain, scene, camera, channels, onSelect }) {
-   const raycaster = new THREE.Raycaster();
-   const pointer = new THREE.Vector2();
-   const nodes = [];
-   const group = new THREE.Group();
-  scene.add(group);
+export function attachElectrodes({ brain, camera, channels, onSelect }) {
+  const raycaster = new THREE.Raycaster();
+  const pointer = new THREE.Vector2();
+  const nodes = [];
+  const group = new THREE.Group();
+  brain.add(group);
 
   channels.forEach((name, i) => {
     const pos = TEN_TWENTY[name];
