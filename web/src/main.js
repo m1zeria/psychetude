@@ -15,7 +15,8 @@ async function boot() {
   const setStatus = (s) => { if (statusEl) statusEl.textContent = s; };
   setStatus(data.meta._fallback ? 'using fallback data — fetch failed' : 'click the brain to begin');
 
-  attachElectrodes({ brain, camera, channels: data.meta.channels,
+  attachElectrodes({ brain, scene, camera, channels: data.meta.channels,
+    onSelect: (channelIndex, channelName, frame) => {
     onSelect: (channelIndex, channelName, frame) => {
       const frameData = data.frames[frame] ?? data.frames[0];
       if (!frameData) { setStatus('no data'); return; }
