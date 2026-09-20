@@ -25,7 +25,7 @@ import {
   midiToFreq,
   quantizeMidi,
   SCALE_MAJOR_PENTATONIC,
-} from './quantize.js';
+} from './quantise.js';
 
 // canonical register assignments. mirrored in pipeline/config.yaml.
 export const REGISTERS = {
