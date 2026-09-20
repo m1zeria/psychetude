@@ -19,6 +19,18 @@ export async function loadBrain(scene) {
       }
     });
 
++   const box = new THREE.Box3().setFromObject(brain);
++   const center = box.getCenter(new THREE.Vector3());
++   const size = box.getSize(new THREE.Vector3());
++   const radius = size.length() / 2;
++   const targetRadius = 1;
++   const scale = targetRadius / radius;
++
++   brain.position.sub(center.multiplyScalar(scale));
++   brain.scale.setScalar(scale);
+    
+    scene.add(brain);
+    return brain;
     scene.add(brain);
     return brain;
   } catch (e) {
