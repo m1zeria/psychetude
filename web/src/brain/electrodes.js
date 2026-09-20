@@ -14,8 +14,6 @@ export function attachElectrodes({ brain, scene, camera, channels, onSelect }) {
    const pointer = new THREE.Vector2();
    const nodes = [];
    const group = new THREE.Group();
-  const pointer = new THREE.Vector2();
-  const nodes = [];
   scene.add(group);
 
   channels.forEach((name, i) => {
