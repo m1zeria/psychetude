@@ -1,47 +1,51 @@
 import * as THREE from 'three';
 import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
+function makeBrainMaterial() {
+  return new THREE.MeshStandardMaterial({
+    color: 0xb8b0d8,
+    roughness: 0.7,
+    metalness: 0.05,
+    emissive: 0x120d24,
+    emissiveIntensity: 0.15,
+  });
+}
+
 export async function loadBrain(scene) {
   const loader = new GLTFLoader();
-  const modelUrl = `${import.meta.env.BASE_URL}models/brain.glb`;
 
   try {
-    const gltf = await loader.loadAsync(modelUrl);
+    const gltf = await loader.loadAsync('./models/brain.glb');
     const brain = gltf.scene;
 
-    brain.traverse((o) => {
-      if (o.isMesh) {
-        o.material = new THREE.MeshStandardMaterial({
-          color: 0xb8b0d8,
-          roughness: 0.7,
-          metalness: 0.05,
-        });
+    brain.traverse((node) => {
+      if (node.isMesh) {
+        node.material = makeBrainMaterial();
       }
     });
-    
+
     const box = new THREE.Box3().setFromObject(brain);
-    const center = box.getCenter(new THREE.Vector3());
     const size = box.getSize(new THREE.Vector3());
-    const radius = size.length() / 2;
-    const targetRadius = 1;
-    const scale = targetRadius / radius;
+    const maxDim = Math.max(size.x, size.y, size.z) || 1;
+    const scale = 2.2 / maxDim;
 
-    brain.position.sub(center.multiplyScalar(scale));
     brain.scale.setScalar(scale);
-
+    brain.position.y = 0.1;
+    brain.rotation.y = -0.8;
+    brain.rotation.x = 0.15;
     scene.add(brain);
     return brain;
-  } catch (e) {
-    console.warn(`brain model could not be loaded from ${modelUrl} — using sphere placeholder`, e);
-
-    const geo = new THREE.SphereGeometry(1, 64, 48);
-    const mat = new THREE.MeshStandardMaterial({
-      color: 0xb8b0d8,
-      roughness: 0.7,
-    });
-
-    const sphere = new THREE.Mesh(geo, mat);
-    scene.add(sphere);
-    return sphere;
+  } catch (error) {
+    console.warn('brain.glb failed to load, using sphere fallback', error);
+    const fallback = new THREE.Mesh(
+      new THREE.SphereGeometry(1.0, 64, 48),
+      makeBrainMaterial(),
+    );
+    fallback.scale.set(1.35, 1.18, 1.0);
+    fallback.rotation.z = 0.15;
+    fallback.rotation.x = -0.2;
+    fallback.rotation.y = -0.7;
+    scene.add(fallback);
+    return fallback;
   }
 }
