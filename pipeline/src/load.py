@@ -1,7 +1,7 @@
 """Phase 1 — load raw EEG, filter, epoch into time windows."""
 from pathlib import Path
+
 import mne
-import numpy as np
 
 
 def load_raw(raw_path: Path) -> mne.io.BaseRaw:
@@ -10,19 +10,25 @@ def load_raw(raw_path: Path) -> mne.io.BaseRaw:
 
 
 def preprocess(raw: mne.io.BaseRaw, cfg: dict) -> mne.io.BaseRaw:
-    """Band-pass + notch filter, then resample."""
+    """Apply notch and band-pass filters, then resample."""
     pre = cfg["preprocessing"]
 
     raw = raw.copy()
+
+    notch_freq = pre.get("notch_freq")
+    notch_q = pre.get("notch_q")
+    if notch_freq is not None:
+        notch_width = float(notch_freq) / float(notch_q) if notch_q else None
+        raw.notch_filter(
+            freqs=notch_freq,
+            notch_widths=notch_width,
+            verbose=False,
+        )
+
     raw.filter(
         l_freq=pre["l_freq"],
         h_freq=pre["h_freq"],
         fir_design="firwin",
-        verbose=False,
-    )
-    raw.notch_filter(
-        freqs=pre["notch_freq"],
-        Q=pre["notch_q"],
         verbose=False,
     )
     if pre.get("resample_hz") and raw.info["sfreq"] != pre["resample_hz"]:
@@ -41,6 +47,9 @@ def epoch(raw: mne.io.BaseRaw, cfg: dict):
     n_samples = raw.n_times
     win_samples = int(win * sfreq)
     step_samples = int(step * sfreq)
+
+    if win_samples <= 0 or step_samples <= 0:
+        raise ValueError("window_seconds and overlap produce an invalid window/step")
 
     # pre-allocate: fetch entire signal once to avoid repeated get_data() calls
     data = raw.get_data()  # shape: (n_channels, n_samples)
