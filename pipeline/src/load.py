@@ -19,12 +19,32 @@ def preprocess(raw: mne.io.BaseRaw, cfg: dict) -> mne.io.BaseRaw:
         h_freq=pre["h_freq"],
         fir_design="firwin",
         verbose=False,
-    )
-    raw.notch_filter(
-        freqs=pre["notch_freq"],
-        Q=pre["notch_q"],
+    def preprocess(raw: mne.io.BaseRaw, cfg: dict) -> mne.io.BaseRaw:
+    pre = cfg["preprocessing"]
+    raw = raw.copy()
+
+    notch_freq = pre.get("notch_freq")
+    notch_q = pre.get("notch_q")
+    if notch_freq is not None:
+        notch_width = float(notch_freq) / float(notch_q) if notch_q else None
+        raw.notch_filter(
+            freqs=notch_freq,
+            notch_widths=notch_width,
+            verbose=False,
+        )
+
+    raw.filter(
+        l_freq=pre["l_freq"],
+        h_freq=pre["h_freq"],
+        fir_design="firwin",
         verbose=False,
     )
+
+    if pre.get("resample_hz") and raw.info["sfreq"] != pre["resample_hz"]:
+        raw.resample(pre["resample_hz"], verbose=False)
+
+    return raw
+    
     if pre.get("resample_hz") and raw.info["sfreq"] != pre["resample_hz"]:
         raw.resample(pre["resample_hz"], verbose=False)
 
